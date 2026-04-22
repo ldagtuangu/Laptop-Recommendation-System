@@ -6,7 +6,18 @@ public class DataCleaner {
 
     public LaptopData clean(LaptopData raw){
 
-        raw.batteryWh = parseDouble
+        raw.isApple = isAppleCpu(raw.cpuRaw);
+        raw.isAmd   = isAmdCpu(raw.cpuRaw);
+        raw.isIntel = isIntelCpu(raw.cpuRaw);
+
+        raw.gpuScore = parseBenchScore(raw.gpuScoreRaw);
+        raw.cpuSingle = parseBenchScore(raw.cpuSingleRaw);
+        raw.cpuMulti = parseBenchScore(raw.cpuMultiRaw);
+
+        raw.hasDiscreteGpu = isDiscrete(raw.gpuScore);
+        raw.category = autoLabel(raw);
+
+        return raw;
     }
 
     public static double parseDouble(String raw, String unit){
@@ -59,30 +70,47 @@ public class DataCleaner {
             return new int[]{0, 0};
     }
 
-    public static boolean isDiscrete(String gpu){
-        if(gpu == null || gpu.isBlank() || gpu.equals("--")){
-            return false;
+    public static double parseBenchScore(String raw){
+        if(raw == null || raw.isBlank() || raw.equals("--")){
+            return 0.0;
         }
+        try{
+            return Double.parseDouble(raw.replace(".",""));
+        } catch (NumberFormatException e) {
+            return 0.0;
+        }
+    }
 
-        String lower = gpu.toLowerCase();
+    public static boolean isDiscrete(double gpuScore) {
+        return gpuScore >= 30000;
+    }
 
-        if (lower.contains("tích hợp"))         return false;
-        if (lower.contains("integrated"))        return false;
-        if (lower.contains("uhd graphics"))      return false;
-        if (lower.contains("iris xe"))           return false;
-        if (lower.contains("iris plus"))         return false;
-        if (lower.contains("radeon graphics"))   return false;
-        if (lower.contains("intel graphics"))    return false;
-        if (lower.contains("adreno gpu"))        return false;
-        if (lower.contains("apple"))             return false;
+    private boolean isAppleCpu(String cpu) {
+        if (cpu == null) return false;
+        String l = cpu.toLowerCase();
+        return l.contains("apple") || l.contains("m1") || l.contains("m2")
+                || l.contains("m3")    || l.contains("m4") || l.contains("m5")
+                || l.contains("a18");
+    }
 
-        if (lower.contains("rtx"))   return true;
-        if (lower.contains("gtx"))   return true;
-        if (lower.contains("rx "))   return true;   // AMD RX series
-        if (lower.contains("arc b")) return true;   // Intel Arc B series
-        if (lower.contains("arc a")) return true;   // Intel Arc A series
+    private boolean isAmdCpu(String cpu) {
+        if (cpu == null) return false;
+        return cpu.toLowerCase().contains("amd")
+                || cpu.toLowerCase().contains("ryzen");
+    }
 
-        return false;
+    private boolean isIntelCpu(String cpu) {
+        if (cpu == null) return false;
+        return cpu.toLowerCase().contains("intel")
+                || cpu.toLowerCase().contains("core");
+    }
 
+    public static String autoLabel(LaptopData d) {
+        if (d.gpuScore > 60000 && d.weightKg > 1.8)  return "gaming";
+
+        if (d.cpuMulti > 8000 && d.weightKg < 1.5
+                && d.batteryWh >= 50 && !d.hasDiscreteGpu) return "student";
+
+        return "office";
     }
 }

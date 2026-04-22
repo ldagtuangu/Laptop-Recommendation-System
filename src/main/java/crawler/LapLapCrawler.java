@@ -101,12 +101,14 @@ public class LapLapCrawler {
                     String gpu        = getSpecValue(doc, "GPU chính");
                     String battery    = getSpecValue(doc, "Dung lượng pin");
                     String weight     = getSpecValue(doc, "Khối lượng");
-
+                    String cpuMulti   = getSpecValue(doc, "Geekbench 6 có gắm sạc", "Geekbench 6 CPU Multi Core");
+                    String cpuSingle  = getSpecValue(doc, "Geekbench 6 có gắm sạc", "Geekbench 6 CPU Single Core");
+                    String gpuScore   = getSpecValue(doc, "Geekbench 6 có gắm sạc", "Geekbench 6 GPU");
                     String resolution = getSpecValue(doc, "Độ phân giải");
 
                     Laptop laptop = new Laptop(
                             name, cpu, gpu, battery,
-                            weight, screenSize, resolution, deviceUrl
+                            weight, screenSize, resolution, cpuSingle, cpuMulti, gpuScore, deviceUrl
                     );
 
                     laptops.add(laptop);
@@ -150,11 +152,32 @@ public class LapLapCrawler {
         return "";
     }
 
+    private static String getSpecValue(Document doc, String heading, String label) {
+        boolean inSection = false;
+
+        for(Element el : doc.getAllElements()){
+            if(el.tagName().equals("h2") && el.text().contains(heading)){
+                inSection = true;
+                continue;
+            }
+
+            if(inSection && el.tagName().equals("h2")){
+                inSection = false;
+            }
+
+            if(inSection && el.tagName().equals("p") && el.text().trim().equals(label)){
+                Element next = el.nextElementSibling();
+                if(next != null && next.tagName().equals("p")){
+                    return next.text().trim();
+                }
+            }
+        }
+        return "";
+    }
+
     public static void saveTOCSV(List<Laptop> laptops){
         try{
             FileWriter writer = new FileWriter("laptop.csv");
-
-            writer.append("name,cpu,gpu,battery,weight,screenSize,resolution,deviceUrl\n");
 
             for(Laptop l : laptops) {
                 writer.append(l.toCSV()).append("\n");

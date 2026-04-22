@@ -7,6 +7,14 @@ public class LaptopData {
     public String gpuRaw;
     public String link;
 
+    public String gpuScoreRaw;
+    public String cpuSingleRaw;
+    public String cpuMultiRaw;
+
+    public double gpuScore;
+    public double cpuSingle;
+    public double cpuMulti;
+
     public double batteryWh;
     public double weightKg;
     public double screenInch;

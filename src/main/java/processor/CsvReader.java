@@ -18,14 +18,15 @@ public class CsvReader {
             String line;
             int lineNum = 1;
 
+            DataCleaner cleaner = new DataCleaner();
             while((line = br.readLine()) != null){
                 lineNum++;
                 line = line.trim();
                 if(line.isEmpty()) continue;
 
-                String[] cols = line.split(",", 8);
+                String[] cols = line.split(",", 11);
 
-                if(cols.length < 8) {
+                if(cols.length < 11) {
                     System.out.println("WARNING line " + lineNum
                             + ": only " + cols.length + " columns, skipping → " + line);
                     continue;
@@ -34,11 +35,26 @@ public class CsvReader {
                 LaptopData d = new LaptopData();
                 d.name = cols[0].trim();
                 d.cpuRaw = cols[1].trim();
-                d.link = cols[7].trim();
+                d.link = cols[10].trim();
 
                 d.batteryWh = DataCleaner.parseDouble(cols[3].trim(), "Wh");
+                d.weightKg = DataCleaner.parseWeight(cols[4].trim());
+                d.screenInch = DataCleaner.parseDouble(cols[5].trim(), "inch");
+
+                int[] res = DataCleaner.parseResolution(cols[6].trim());
+                d.resolutionW = res[0];
+                d.resolutionH = res[1];
+                d.totalPixels = (long) d.resolutionW * d.resolutionH;
+
+                LaptopData cleaned = cleaner.clean(d);
+
+                list.add(d);
 
             }
         }
+
+        System.out.println("CsvReader: loaded " + list.size() + " laptops from " + filePath);
+        return list;
+
     }
 }
