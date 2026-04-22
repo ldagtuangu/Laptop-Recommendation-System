@@ -4,8 +4,17 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.io.FileWriter;
+import java.time.Duration;
 import java.util.*;
 
 public class LapLapCrawler {
@@ -13,34 +22,91 @@ public class LapLapCrawler {
     public static void main(String[] args) {
         List<Laptop> laptops = new ArrayList<>();
 
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless");
+        options.addArguments("--disable-gpu");
+        options.addArguments("--no-sandbox");
+
+        WebDriver driver = new ChromeDriver(options);
+
         try {
-            String baseUrl = "https://laplap.tech/";
+            driver.get("https://laplap.tech/");
 
-            System.out.println("Connecting to site...");
-            Document doc = Jsoup.connect(baseUrl)
-                    .userAgent("Mozilla/5.0")
-                    .timeout(10000)
-                    .get();
-            System.out.println("Connected");
+            int maxClicks = 50;
+            int clickCount = 0;
+            while (clickCount < maxClicks) {
+                try {
+                    WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+                    WebElement loadMoreBtn = wait.until(
+                            ExpectedConditions.presenceOfElementLocated(
+                                    By.xpath("//button[contains(text(),'Tải thêm')]")
+                            )
+                    );
 
-            Elements cards = doc.select(".flex.items-center");
+                    // Lấy số item TRƯỚC khi click
+                    int currentCount = driver.findElements(
+                            By.cssSelector("a[href*='/device/']")
+                    ).size();
 
+                    // Scroll đến nút rồi click bằng JS
+                    ((JavascriptExecutor) driver).executeScript(
+                            "arguments[0].scrollIntoView(true);", loadMoreBtn
+                    );
+                    Thread.sleep(500);
+                    ((JavascriptExecutor) driver).executeScript(
+                            "arguments[0].click();", loadMoreBtn
+                    );
+
+                    long deadline = System.currentTimeMillis() + 5000;
+                    while (System.currentTimeMillis() < deadline) {
+                        int newCount = driver.findElements(
+                                By.cssSelector("a[href*='/device/']")
+                        ).size();
+                        if (newCount > currentCount) {
+                            System.out.println("Items: " + currentCount + " → " + newCount);
+                            break;
+                        }
+                        Thread.sleep(300);
+                    }
+                } catch (Exception e) {
+                    break;
+                }
+            }
+
+            String fullHtml = driver.getPageSource();
+            driver.quit();
+
+            Document homePage = Jsoup.parse(fullHtml, "https://laplap.tech");
+
+            Elements cards = homePage.select("a[href^=/device/]");
             System.out.println("Found: " + cards.size() + " items");
 
             for (Element card : cards) {
                 try {
-                    String name = card.select(".text-3xl text-white").text();
-                    String cpu = card.select("p:contains(CPU) + p.specs-value").text();
-                    String gpu = doc.select("p:contains(GPU chính) + p.specs-value").text();
-                    String battery = doc.select("p:contains(Dung lượng pin) + p.specs-value").text();
-                    String weight = doc.select("p:contains(Khối lượng) + p.specs-value").text();
-                    String screenSize = doc.select("p:contains(Kích thước màn hình) + p.specs-value").text();
-                    String resolution = doc.select("p:contains(Độ phân giải) + p.specs-value").text();
-                    String link = "https://laplap.tech/" + doc.select("a").attr("href");
+
+                    String devicePath = card.attr("href");
+                    String deviceUrl = "https://laplap.tech" + devicePath;
+
+                    Document doc = Jsoup.connect(deviceUrl)
+                            .userAgent("Mozilla/5.0")
+                            .timeout(10000)
+                            .get();
+                    String screenSize = getSpecValue(doc, "Kích thước màn hình");
+                    if (size(screenSize) <= 11) {
+                        continue;
+                    }
+                    String name = doc.select("h1").first() != null
+                                ? doc.select("h1").first().text() : "";
+                    String cpu        = getSpecValue(doc, "CPU");
+                    String gpu        = getSpecValue(doc, "GPU chính");
+                    String battery    = getSpecValue(doc, "Dung lượng pin");
+                    String weight     = getSpecValue(doc, "Khối lượng");
+
+                    String resolution = getSpecValue(doc, "Độ phân giải");
 
                     Laptop laptop = new Laptop(
                             name, cpu, gpu, battery,
-                            weight, screenSize, resolution, link
+                            weight, screenSize, resolution, deviceUrl
                     );
 
                     laptops.add(laptop);
@@ -52,9 +118,54 @@ public class LapLapCrawler {
                     System.out.println("Error parsing item...");
                 }
             }
+
+            saveTOCSV(laptops);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
 
+    }
+
+    private static int size(String screenSize) {
+        try {
+            if (screenSize == null || screenSize.isEmpty()) return 0;
+
+            String number = screenSize.split(" ")[0];  // "14.2"
+            return (int) Double.parseDouble(number);   // parseDouble thay parseInt
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    private static String getSpecValue(Document doc, String label) {
+        for (Element p : doc.select("p")) {
+            if (p.text().trim().equals(label)) {
+                Element next = p.nextElementSibling();
+                if (next != null && next.tagName().equals("p")) {
+                    return next.text().trim();
+                }
+            }
+        }
+        return "";
+    }
+
+    public static void saveTOCSV(List<Laptop> laptops){
+        try{
+            FileWriter writer = new FileWriter("laptop.csv");
+
+            writer.append("name,cpu,gpu,battery,weight,screenSize,resolution,deviceUrl\n");
+
+            for(Laptop l : laptops) {
+                writer.append(l.toCSV()).append("\n");
+            }
+
+            writer.flush();
+            writer.close();
+
+            System.out.println("Saved to laptops.csv");
+        } catch(Exception e){
+            e.printStackTrace();
+        }
     }
 }
