@@ -23,9 +23,9 @@ public class LapLapCrawler {
         List<Laptop> laptops = new ArrayList<>();
 
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless");
-        options.addArguments("--disable-gpu");
-        options.addArguments("--no-sandbox");
+//        options.addArguments("--headless");
+//        options.addArguments("--disable-gpu");
+//        options.addArguments("--no-sandbox");
 
         WebDriver driver = new ChromeDriver(options);
 

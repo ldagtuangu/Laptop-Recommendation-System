@@ -35,6 +35,10 @@ public class CsvReader {
                 LaptopData d = new LaptopData();
                 d.name = cols[0].trim();
                 d.cpuRaw = cols[1].trim();
+                d.gpuRaw = cols[2].trim();
+                d.gpuScoreRaw = cols[7].trim();
+                d.cpuSingleRaw = cols[8].trim();
+                d.cpuMultiRaw = cols[9].trim();
                 d.link = cols[10].trim();
 
                 d.batteryWh = DataCleaner.parseDouble(cols[3].trim(), "Wh");
@@ -48,7 +52,7 @@ public class CsvReader {
 
                 LaptopData cleaned = cleaner.clean(d);
 
-                list.add(d);
+                list.add(cleaned);
 
             }
         }
