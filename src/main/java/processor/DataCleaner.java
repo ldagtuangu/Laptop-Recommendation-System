@@ -15,7 +15,6 @@ public class DataCleaner {
         raw.cpuMulti = parseBenchScore(raw.cpuMultiRaw);
 
         raw.hasDiscreteGpu = isDiscrete(raw.gpuScore);
-        raw.category = autoLabel(raw);
 
         return raw;
     }
@@ -103,14 +102,5 @@ public class DataCleaner {
         if (cpu == null) return false;
         return cpu.toLowerCase().contains("intel")
                 || cpu.toLowerCase().contains("core");
-    }
-
-    public static String autoLabel(LaptopData d) {
-        if (d.gpuScore > 60000 && d.weightKg > 1.8)  return "gaming";
-
-        if (d.cpuMulti > 8000 && d.weightKg < 1.5
-                && d.batteryWh >= 55 && !d.hasDiscreteGpu) return "student";
-
-        return "office";
     }
 }

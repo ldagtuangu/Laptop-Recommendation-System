@@ -36,6 +36,7 @@ public class LaptopData {
     public double normCpuSingle;
 
     public String category;
+    public int clusterId;
 
     public double[] toVector() {
         return new double[]{
