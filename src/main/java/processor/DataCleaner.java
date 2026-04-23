@@ -109,7 +109,7 @@ public class DataCleaner {
         if (d.gpuScore > 60000 && d.weightKg > 1.8)  return "gaming";
 
         if (d.cpuMulti > 8000 && d.weightKg < 1.5
-                && d.batteryWh >= 50 && !d.hasDiscreteGpu) return "student";
+                && d.batteryWh >= 55 && !d.hasDiscreteGpu) return "student";
 
         return "office";
     }

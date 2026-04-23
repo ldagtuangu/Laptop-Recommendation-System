@@ -31,16 +31,35 @@ public class LaptopData {
     public double normWeight;
     public double normScreen;
     public double normResolution;
+    public double normGpuScore;
+    public double normCpuMulti;
+    public double normCpuSingle;
 
     public String category;
+
+    public double[] toVector() {
+        return new double[]{
+                normBattery,            // 0
+                normWeight,             // 1
+                normScreen,             // 2
+                normResolution,         // 3
+                normGpuScore,           // 4
+                normCpuMulti,           // 5
+                normCpuSingle,          // 6
+                isAmd   ? 1.0 : 0.0,   // 7
+                isIntel ? 1.0 : 0.0,   // 8
+                isApple ? 1.0 : 0.0    // 9
+        };
+    }
 
     @Override
     public String toString() {
         return String.format(
-                "[%s] battery=%.1f screen=%.1f weight=%.2f gpu=%s cpu=%s cat=%s",
+                "[%s] battery=%.1f screen=%.1f weight=%.2f " +
+                        "gpu=%s(%.0f) cpuMulti=%.0f cat=%s",
                 name, batteryWh, screenInch, weightKg,
                 hasDiscreteGpu ? "discrete" : "integrated",
-                cpuBrand(), category
+                gpuScore, cpuMulti, category
         );
     }
 
