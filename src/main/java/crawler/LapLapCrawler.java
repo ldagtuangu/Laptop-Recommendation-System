@@ -97,6 +97,9 @@ public class LapLapCrawler {
                     }
                     String name = doc.select("h1").first() != null
                                 ? doc.select("h1").first().text() : "";
+                    if(name.contains("tab") || name.contains("Tab")){
+                        continue;
+                    }
                     String cpu        = getSpecValue(doc, "CPU");
                     String gpu        = getSpecValue(doc, "GPU chính");
                     String battery    = getSpecValue(doc, "Dung lượng pin");

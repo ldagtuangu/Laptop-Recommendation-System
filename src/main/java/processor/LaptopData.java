@@ -40,16 +40,15 @@ public class LaptopData {
 
     public double[] toVector() {
         return new double[]{
-                normBattery,            // 0
-                normWeight,             // 1
-                normScreen,             // 2
-                normResolution,         // 3
-                normGpuScore,           // 4
-                normCpuMulti,           // 5
-                normCpuSingle,          // 6
-                isAmd   ? 1.0 : 0.0,   // 7
-                isIntel ? 1.0 : 0.0,   // 8
-                isApple ? 1.0 : 0.0    // 9
+                normBattery,                  // 0
+                normWeight,                   // 1
+                normScreen,                   // 2
+                normResolution,               // 3
+                normGpuScore,                 // 4
+                normCpuMulti,                 // 5
+                normCpuSingle,                // 6
+                isAmd   ? 1.0 : 0.0,         // 7
+                isIntel ? 1.0 : 0.0          // 8
         };
     }
 

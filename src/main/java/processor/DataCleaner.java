@@ -4,17 +4,16 @@ import java.util.List;
 
 public class DataCleaner {
 
-    public LaptopData clean(LaptopData raw){
-
+    public LaptopData clean(LaptopData raw) {
         raw.isApple = isAppleCpu(raw.cpuRaw);
         raw.isAmd   = isAmdCpu(raw.cpuRaw);
         raw.isIntel = isIntelCpu(raw.cpuRaw);
 
-        raw.gpuScore = parseBenchScore(raw.gpuScoreRaw);
+        raw.gpuScore  = parseBenchScore(raw.gpuScoreRaw);
         raw.cpuSingle = parseBenchScore(raw.cpuSingleRaw);
-        raw.cpuMulti = parseBenchScore(raw.cpuMultiRaw);
+        raw.cpuMulti  = parseBenchScore(raw.cpuMultiRaw);
 
-        raw.hasDiscreteGpu = isDiscrete(raw.gpuScore);
+        raw.hasDiscreteGpu = isDiscrete(raw.gpuScore, raw.gpuRaw);
 
         return raw;
     }
@@ -80,8 +79,32 @@ public class DataCleaner {
         }
     }
 
-    public static boolean isDiscrete(double gpuScore) {
-        return gpuScore >= 30000;
+    public static boolean isDiscrete(double gpuScore, String gpuRaw) {
+        if (gpuScore >= 30000) return true;
+
+        if (gpuRaw == null || gpuRaw.isBlank()) return false;
+        String l = gpuRaw.toLowerCase();
+
+        // Integrated keywords → false
+        if (l.contains("tích hợp"))        return false;
+        if (l.contains("integrated"))      return false;
+        if (l.contains("uhd"))             return false;
+        if (l.contains("iris"))            return false;
+        if (l.contains("radeon graphics")) return false;
+        if (l.contains("intel graphics"))  return false;
+        if (l.contains("adreno gpu"))      return false;
+        if (l.contains("apple"))           return false;
+
+        // Discrete keywords → true
+        if (l.contains("rtx"))   return true;
+        if (l.contains("gtx"))   return true;
+        if (l.contains("rx "))   return true;
+        if (l.contains("arc b")) return true;  // Arc B390, B580
+        if (l.contains("arc a")) return true;  // Arc A770
+        if (l.contains("rtx 2000") || l.contains("rtx 3000")
+                || l.contains("rtx 4000") || l.contains("rtx 5000")) return true; // Quadro RTX
+
+        return false;
     }
 
     private boolean isAppleCpu(String cpu) {
