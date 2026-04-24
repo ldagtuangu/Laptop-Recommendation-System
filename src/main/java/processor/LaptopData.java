@@ -1,5 +1,8 @@
 package processor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class LaptopData {
 
     public String name;
@@ -26,6 +29,7 @@ public class LaptopData {
     public boolean isAmd;
     public boolean isIntel;
     public boolean isApple;
+    public boolean isGamingGpu;
 
     public double normBattery;
     public double normWeight;
@@ -38,17 +42,18 @@ public class LaptopData {
     public String category;
     public int clusterId;
 
+    public List<String> tags = new ArrayList<>();
+
     public double[] toVector() {
         return new double[]{
-                normBattery,                  // 0
-                normWeight,                   // 1
-                normScreen,                   // 2
-                normResolution,               // 3
-                normGpuScore,                 // 4
-                normCpuMulti,                 // 5
-                normCpuSingle,                // 6
-                isAmd   ? 1.0 : 0.0,         // 7
-                isIntel ? 1.0 : 0.0          // 8
+                normBattery,                    // 0
+                normWeight,                     // 1
+                normScreen,                     // 2
+                normResolution,                 // 3
+                isGamingGpu ? 1.0 : 0.0,       // 4 ← isGamingGpu thay hasDiscreteGpu
+                isAmd   ? 1.0 : 0.0,           // 5
+                isIntel ? 1.0 : 0.0,           // 6
+                isApple ? 1.0 : 0.0            // 7
         };
     }
 

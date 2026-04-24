@@ -14,8 +14,17 @@ public class DataCleaner {
         raw.cpuMulti  = parseBenchScore(raw.cpuMultiRaw);
 
         raw.hasDiscreteGpu = isDiscrete(raw.gpuScore, raw.gpuRaw);
+        raw.isGamingGpu = isGamingGpu(raw.gpuRaw);
 
         return raw;
+    }
+
+    public static boolean isGamingGpu(String gpuRaw) {
+        if (gpuRaw == null || gpuRaw.isBlank()) return false;
+        String l = gpuRaw.toLowerCase();
+        return l.contains("rtx")
+                || l.contains("gtx")
+                || l.contains("rx ");   // AMD RX series
     }
 
     public static double parseDouble(String raw, String unit){

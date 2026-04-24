@@ -41,17 +41,6 @@ public class Dataprocessor {
         try(BufferedWriter bw = new BufferedWriter(
                 new OutputStreamWriter(
                         new FileOutputStream(path), StandardCharsets.UTF_8))){
-            bw.write(String.join(",",
-                    "name", "cpu", "gpu",
-                    "batteryWh", "weightKg", "screenInch",
-                    "resW", "resH", "totalPixels",
-                    "gpuScore", "cpuSingle", "cpuMulti",
-                    "hasDiscreteGpu", "isAmd", "isIntel", "isApple",
-                    "normBattery", "normWeight", "normScreen", "normResolution",
-                    "normGpuScore", "normCpuMulti", "normCpuSingle",
-                    "category", "link"
-            ));
-            bw.newLine();
 
             for (LaptopData d : laptops) {
                 bw.write(String.join(",",
@@ -79,6 +68,7 @@ public class Dataprocessor {
                         fmt4(d.normCpuMulti),
                         fmt4(d.normCpuSingle),
                         d.category,
+                        String.join(", ", d.tags),
                         d.link
                 ));
                 bw.newLine();
