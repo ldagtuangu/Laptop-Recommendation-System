@@ -49,11 +49,12 @@ public class LaptopData {
                 normBattery,                    // 0
                 normWeight,                     // 1
                 normScreen,                     // 2
-                normResolution,                 // 3
-                isGamingGpu ? 1.0 : 0.0,       // 4 ← isGamingGpu thay hasDiscreteGpu
-                isAmd   ? 1.0 : 0.0,           // 5
-                isIntel ? 1.0 : 0.0,           // 6
-                isApple ? 1.0 : 0.0            // 7
+                normResolution,
+                normGpuScore,
+                normCpuMulti,
+                normCpuSingle,// 3
+                isGamingGpu ? 1.0 : 0.0      // 4 ← isGamingGpu thay hasDiscreteGpu
+         // 7
         };
     }
 

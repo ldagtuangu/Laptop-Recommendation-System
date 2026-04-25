@@ -26,36 +26,8 @@ public class Main {
         System.out.println("Total: " + all.size() + " laptops");
         System.out.println("\n═══════════════════════════════════════");
 
-        for (LaptopData d : all){
-            String lower = d.name.toLowerCase();
-
-            if (LaptopClassifier.isGamingName(lower)
-                || (d.isGamingGpu && d.normWeight <= 0.5)) {
-                d.category = "gaming";
-                continue;
-            }
-
-            if (d.isApple
-                    || LaptopClassifier.isCreativeGpu(d.gpuRaw)
-                    || d.normResolution >= 0.55) {
-                d.category = "creative";
-            }
-        }
-
-        long gaming   = all.stream().filter(d -> "gaming".equals(d.category)).count();
-        long creative = all.stream().filter(d -> "creative".equals(d.category)).count();
-        long unclassifiedCount = all.stream().filter(d -> d.category == null).count();
-        System.out.println("Rule-based → gaming:   " + gaming);
-        System.out.println("Rule-based → creative: " + creative);
-        System.out.println("Unclassified:          " + unclassifiedCount);
-
-
-        List<LaptopData> unclassified = all.stream()
-                .filter(d -> d.category == null)
-                .collect(Collectors.toList());
-
         KMeans kmeans = new KMeans();
-        kmeans.fitWithIdealCentroids(unclassified);
+        kmeans.fit(all);
 
         Map<String, List<String>> group = new LinkedHashMap<>();
         group.put("gaming", new ArrayList<>());

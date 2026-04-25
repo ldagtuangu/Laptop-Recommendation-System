@@ -22,9 +22,9 @@ public class DataCleaner {
     public static boolean isGamingGpu(String gpuRaw) {
         if (gpuRaw == null || gpuRaw.isBlank()) return false;
         String l = gpuRaw.toLowerCase();
-        return l.contains("rtx")
+        return (l.contains("rtx") && !l.contains("pro"))
                 || l.contains("gtx")
-                || l.contains("rx ");   // AMD RX series
+                || l.contains("rx ");
     }
 
     public static double parseDouble(String raw, String unit){
