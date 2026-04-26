@@ -1,6 +1,7 @@
 package recommender;
 
 import processor.*;
+import database.DatabaseManager;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -64,5 +65,12 @@ public class Main {
         RecommendationEngine.printResults(engine.recommend(pref3), pref3);
 
         DataProcessor.saveProcessed(all, "laptop_processed.csv");
+
+        DatabaseManager db = new DatabaseManager();
+        try {
+            db.saveAll(all);
+        } finally {
+            db.close();
+        }
     }
 }
