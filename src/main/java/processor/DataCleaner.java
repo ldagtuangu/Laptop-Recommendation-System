@@ -22,7 +22,7 @@ public class DataCleaner {
     public static boolean isGamingGpu(String gpuRaw) {
         if (gpuRaw == null || gpuRaw.isBlank()) return false;
         String l = gpuRaw.toLowerCase();
-        return (l.contains("rtx") && !l.contains("pro"))
+        return (l.contains("rtx") && !l.contains("pro") && !l.contains("ada"))
                 || l.contains("gtx")
                 || l.contains("rx ");
     }

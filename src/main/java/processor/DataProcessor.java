@@ -4,7 +4,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-public class Dataprocessor {
+public class DataProcessor {
 
     public static void main(String[] args) throws Exception {
         String inputPath = "laptop.csv";
