@@ -44,7 +44,7 @@ public class TagAssigner {
 
         // ── GPU type ─────────────────────────────────────────────────────────
         if (d.isGamingGpu)                                  tags.add("gaming GPU");
-        else if (LaptopClassifier.isCreativeGpu(d.gpuRaw)) tags.add("workstation GPU");
+        else if (isCreativeGpu(d.gpuRaw)) tags.add("workstation GPU");
         else if (d.hasDiscreteGpu)                          tags.add("discrete GPU");
         else                                                tags.add("integrated GPU");
 
@@ -72,5 +72,18 @@ public class TagAssigner {
         }
 
         return tags;
+    }
+
+    private static boolean isCreativeGpu(String gpuRaw) {
+        if (gpuRaw == null || gpuRaw.isBlank()) return false;
+        String l = gpuRaw.toLowerCase();
+        return l.contains("quadro")
+                || l.contains("rtx 2000 ada")
+                || l.contains("rtx 3000 ada")
+                || l.contains("rtx 4000 ada")
+                || l.contains("rtx 5000 ada")
+                || l.contains("rtx pro")
+                || l.contains("arc pro")
+                || l.contains("arc b");
     }
 }
