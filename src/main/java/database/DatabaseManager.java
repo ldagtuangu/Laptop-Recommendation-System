@@ -6,6 +6,7 @@ import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import processor.LaptopData;
 import java.util.List;
+import java.util.Optional;
 
 public class DatabaseManager {
 
@@ -71,9 +72,57 @@ public class DatabaseManager {
         }
     }
 
+    // Lưu kết quả recommendation
+    public void saveResult(String cacheKey, String response) {
+        try (Session session = sessionFactory.openSession()) {
+            Transaction tx = session.beginTransaction();
+            RecommendResultEntity entity =
+                    new RecommendResultEntity(cacheKey, response);
+            session.merge(entity);   // insert or update
+            tx.commit();
+            System.out.println("[DB] Saved result: " + cacheKey);
+        }
+    }
+
+    // Lấy kết quả đã lưu
+    public Optional<String> findResult(String cacheKey) {
+        try (Session session = sessionFactory.openSession()) {
+            RecommendResultEntity entity =
+                    session.get(RecommendResultEntity.class, cacheKey);
+
+            if (entity == null) return Optional.empty();
+
+            // Tăng hit count
+            Transaction tx = session.beginTransaction();
+            entity.incrementHit();
+            session.merge(entity);
+            tx.commit();
+
+            return Optional.of(entity.getResponse());
+        }
+    }
+
+    // Xem thống kê cache DB
+    public void printDbCacheStats() {
+        try (Session session = sessionFactory.openSession()) {
+            Long count = session.createQuery(
+                            "SELECT COUNT(*) FROM RecommendResultEntity", Long.class)
+                    .uniqueResult();
+            System.out.println("[DB Cache] Total entries: " + count);
+        }
+    }
+
     // ── Close ─────────────────────────────────────────────────────────────────
     public void close() {
         sessionFactory.close();
         System.out.println("SessionFactory closed.");
+    }
+
+    public long countLaptops() {
+        try (Session session = sessionFactory.openSession()) {
+            return session.createQuery(
+                            "SELECT COUNT(*) FROM LaptopEntity", Long.class)
+                    .uniqueResult();
+        }
     }
 }

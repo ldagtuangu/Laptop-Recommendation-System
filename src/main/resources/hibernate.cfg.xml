@@ -11,13 +11,12 @@
         <property name="hibernate.connection.username">root</property>
         <property name="hibernate.connection.password">Anhtuan1/</property>
 
-        <!-- Hibernate settings -->
         <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
         <property name="hibernate.hbm2ddl.auto">update</property>
         <property name="hibernate.show_sql">true</property>
         <property name="hibernate.format_sql">true</property>
 
-        <!-- Entity class -->
         <mapping class="database.LaptopEntity"/>
+        <mapping class="database.RecommendResultEntity"/>
     </session-factory>
 </hibernate-configuration>
