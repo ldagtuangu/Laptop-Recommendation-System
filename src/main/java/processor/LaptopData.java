@@ -5,6 +5,10 @@ import java.util.List;
 
 public class LaptopData {
 
+    public String resolution;
+    public String screenSize;
+    public String weight;
+    public String battery;
     public String name;
     public String cpuRaw;
     public String gpuRaw;
@@ -42,20 +46,41 @@ public class LaptopData {
     public String category;
     public int clusterId;
 
+    public LaptopData(){}
+
+    public LaptopData(String name, String cpu, String gpu, String battery,
+                  String weight, String screenSize, String resolution, String cpuSingleScore ,String cpuMultiScore, String gpuScore, String link){
+        this.name = name;
+        this.cpuRaw = cpu;
+        this.gpuRaw = gpu;
+        this.battery = battery;
+        this.weight = weight;
+        this.screenSize = screenSize;
+        this.resolution = resolution;
+        this.cpuSingleRaw = cpuSingleScore;
+        this.cpuMultiRaw = cpuMultiScore;
+        this.gpuScoreRaw = gpuScore;
+        this.link = link;
+    }
+
     public List<String> tags = new ArrayList<>();
 
     public double[] toVector() {
         return new double[]{
-                normBattery,                    // 0
-                normWeight,                     // 1
-                normScreen,                     // 2
+                normBattery,
+                normWeight,
+                normScreen,
                 normResolution,
                 normGpuScore,
                 normCpuMulti,
                 normCpuSingle,// 3
-                isGamingGpu ? 1.0 : 0.0      // 4 ← isGamingGpu thay hasDiscreteGpu
-         // 7
+                isGamingGpu ? 1.0 : 0.0
         };
+    }
+
+    public String toCSV() {
+        return name + "," + cpuRaw + "," + gpuRaw + "," + battery + "," +
+                weight + "," + screenSize + "," + resolution + "," + cpuSingleRaw + "," + cpuMultiRaw + "," + gpuScoreRaw + "," + link;
     }
 
     @Override

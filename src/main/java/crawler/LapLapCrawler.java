@@ -1,5 +1,7 @@
 package crawler;
 
+import processor.LaptopData;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -20,7 +22,7 @@ import java.util.*;
 public class LapLapCrawler {
 
     public static void main(String[] args) {
-        List<Laptop> laptops = new ArrayList<>();
+        List<LaptopData> laptops = new ArrayList<>();
 
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--headless");
@@ -109,7 +111,7 @@ public class LapLapCrawler {
                     String gpuScore   = getSpecValue(doc, "Geekbench 6 có gắm sạc", "Geekbench 6 GPU");
                     String resolution = getSpecValue(doc, "Độ phân giải");
 
-                    Laptop laptop = new Laptop(
+                    LaptopData laptop = new LaptopData(
                             name, cpu, gpu, battery,
                             weight, screenSize, resolution, cpuSingle, cpuMulti, gpuScore, deviceUrl
                     );
@@ -178,11 +180,11 @@ public class LapLapCrawler {
         return "";
     }
 
-    public static void saveTOCSV(List<Laptop> laptops){
+    public static void saveTOCSV(List<LaptopData> laptops){
         try{
             FileWriter writer = new FileWriter("laptop.csv");
 
-            for(Laptop l : laptops) {
+            for(LaptopData l : laptops) {
                 writer.append(l.toCSV()).append("\n");
             }
 
