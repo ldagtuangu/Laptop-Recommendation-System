@@ -3,40 +3,18 @@ package recommender;
 import processor.LaptopData;
 import java.util.*;
 
-/**
- * K-Means k=3: gaming / office / creative
- *
- * Key design decisions:
- *  1. Scale Apple benchmark → Windows range (median-based)
- *     Apple dùng Metal API, Windows dùng OpenCL → không so được trực tiếp
- *  2. Bỏ isApple/isAmd/isIntel khỏi vector
- *     → K-Means phân loại theo hiệu năng thực tế, không theo brand
- *  3. Ideal centroids thay vì random seed
- *     → Kết quả ổn định, đúng ý nghĩa category
- */
 public class KMeans {
 
     private static final int      K        = 3;
     private static final int      MAX_ITER = 100;
     private static final String[] LABELS   = {"gaming", "office", "creative"};
 
-    // Vector 8 chiều — không có brand features
-    //                          bat   w     scr   res   gpu   cpuM  cpuS  gpuF
     private static final double[] CENTROID_GAMING   = {0.50, 0.30, 0.70, 0.03, 0.80, 0.55, 0.70, 1.0};
     private static final double[] CENTROID_OFFICE   = {0.80, 0.80, 0.40, 0.03, 0.20, 0.15, 0.30, 0.0};
     private static final double[] CENTROID_CREATIVE = {0.60, 0.60, 0.70, 0.55, 0.65, 0.75, 0.65, 0.0};
 
     private double[][] centroids = new double[K][];
 
-    // ── Public API ────────────────────────────────────────────────────────────
-
-    /**
-     * Main entry point:
-     *  1. Scale Apple benchmark
-     *  2. Re-normalize GPU/CPU scores
-     *  3. Run K-Means
-     *  4. Assign category labels
-     */
     public void fit(List<LaptopData> laptops) {
         scaleAppleBenchmark(laptops);
         renormalizeScores(laptops);
@@ -46,7 +24,6 @@ public class KMeans {
         centroids[2] = CENTROID_CREATIVE.clone();
 
         System.out.println("K-Means k=3 starting...");
-        printCentroids("Initial");
 
         for (int iter = 0; iter < MAX_ITER; iter++) {
             boolean changed = assign(laptops);
@@ -61,18 +38,11 @@ public class KMeans {
         for (LaptopData d : laptops) {
             d.category = LABELS[d.clusterId];
         }
-
-        printCentroids("Final");
     }
 
-    /**
-     * Predict category cho laptop mới dựa vào centroid đã train
-     */
     public String predict(LaptopData d) {
         return LABELS[nearestCentroid(d.toVector())];
     }
-
-    // ── Step 1: Scale Apple benchmark → Windows range ─────────────────────────
 
     private void scaleAppleBenchmark(List<LaptopData> laptops) {
         List<LaptopData> apple   = new ArrayList<>();
@@ -102,15 +72,11 @@ public class KMeans {
         }
     }
 
-    // ── Step 2: Re-normalize GPU/CPU after scaling ────────────────────────────
-
     private void renormalizeScores(List<LaptopData> laptops) {
         renorm(laptops, d -> d.gpuScore,  (d, v) -> d.normGpuScore  = v);
         renorm(laptops, d -> d.cpuMulti,  (d, v) -> d.normCpuMulti  = v);
         renorm(laptops, d -> d.cpuSingle, (d, v) -> d.normCpuSingle = v);
     }
-
-    // ── Step 3: Assign each laptop to nearest centroid ────────────────────────
 
     private boolean assign(List<LaptopData> laptops) {
         boolean changed = false;
@@ -123,8 +89,6 @@ public class KMeans {
         }
         return changed;
     }
-
-    // ── Step 4: Update centroids = mean of cluster ────────────────────────────
 
     private void updateCentroids(List<LaptopData> laptops) {
         int vecLen = centroids[0].length;
@@ -150,8 +114,6 @@ public class KMeans {
             }
         }
     }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private int nearestCentroid(double[] v) {
         int    best    = 0;
@@ -205,16 +167,6 @@ public class KMeans {
             double v = getter.applyAsDouble(d);
             if (v <= 0 || mx == mn) setter.set(d, 0.0);
             else setter.set(d, Math.max(0, Math.min(1, (v - mn) / (mx - mn))));
-        }
-    }
-
-    private void printCentroids(String label) {
-        System.out.println(label + " centroids:");
-        for (int i = 0; i < K; i++) {
-            double[] c = centroids[i];
-            System.out.printf("  [%-8s] bat=%.2f w=%.2f scr=%.2f res=%.2f "
-                            + "gpu=%.2f cpuM=%.2f cpuS=%.2f gpuF=%.1f%n",
-                    LABELS[i], c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7]);
         }
     }
 }
