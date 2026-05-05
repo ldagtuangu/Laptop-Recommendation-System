@@ -44,14 +44,10 @@ public class Server {
 
         System.out.println("Connecting to database...");
         db = new DatabaseManager();
-        db.saveAll(all);
 
         long count = db.countLaptops();
         if (count == 0) {
             db.saveAll(all);
-            System.out.println("Saved " + all.size() + " laptops to DB.");
-        } else {
-            System.out.println("DB already has " + count + " laptops.");
         }
 
 
