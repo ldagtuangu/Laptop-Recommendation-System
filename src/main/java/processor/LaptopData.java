@@ -73,7 +73,7 @@ public class LaptopData {
                 normResolution,
                 normGpuScore,
                 normCpuMulti,
-                normCpuSingle,// 3
+                normCpuSingle,
                 isGamingGpu ? 1.0 : 0.0
         };
     }

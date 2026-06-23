@@ -38,55 +38,66 @@ public class ChatUI extends JFrame {
 
         setTitle("Laptop Recommender — " + username
                 + " | " + category + " | " + cpuBrand);
-        setSize(650, 600);
+        setSize(800, 700);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
         // ── Result area ───────────────────────────────────────────────────────
-        resultArea = new JTextArea();
+        resultArea = new JTextArea(20, 60);
         resultArea.setEditable(false);
         resultArea.setLineWrap(true);
         resultArea.setWrapStyleWord(true);
-        resultArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        resultArea.setFont(new Font("SansSerif", Font.PLAIN, 13));
         JScrollPane scrollPane = new JScrollPane(resultArea);
+        scrollPane.setMinimumSize(new Dimension(600, 300));
 
         // ── Controls panel ────────────────────────────────────────────────────
-        JPanel controlPanel = new JPanel(new GridLayout(5, 2, 10, 8));
+        JPanel controlPanel = new JPanel(new GridBagLayout());
         controlPanel.setBorder(BorderFactory.createTitledBorder("Preferences"));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill     = GridBagConstraints.HORIZONTAL;
+        gbc.insets   = new Insets(4, 8, 4, 8);
 
         // Performance weight slider
         perfLabel = new JLabel("Performance: 40%");
         perfSlider = new JSlider(0, 100, 40);
         perfSlider.addChangeListener(e -> updateLabels());
-        controlPanel.add(perfLabel);
-        controlPanel.add(perfSlider);
+        gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0;
+        controlPanel.add(perfLabel, gbc);
+        gbc.gridx = 1; gbc.weightx = 1;
+        controlPanel.add(perfSlider, gbc);
 
         // Portability weight slider
         portLabel = new JLabel("Portability: 30%");
         portSlider = new JSlider(0, 100, 30);
         portSlider.addChangeListener(e -> updateLabels());
-        controlPanel.add(portLabel);
-        controlPanel.add(portSlider);
+        gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0;
+        controlPanel.add(portLabel, gbc);
+        gbc.gridx = 1; gbc.weightx = 1;
+        controlPanel.add(portSlider, gbc);
 
         // Display weight slider
         dispLabel = new JLabel("Display: 30%");
         dispSlider = new JSlider(0, 100, 30);
         dispSlider.addChangeListener(e -> updateLabels());
-        controlPanel.add(dispLabel);
-        controlPanel.add(dispSlider);
+        gbc.gridx = 0; gbc.gridy = 2; gbc.weightx = 0;
+        controlPanel.add(dispLabel, gbc);
+        gbc.gridx = 1; gbc.weightx = 1;
+        controlPanel.add(dispSlider, gbc);
 
         // Top N spinner
-        controlPanel.add(new JLabel("Top N results:"));
+        gbc.gridx = 0; gbc.gridy = 3; gbc.weightx = 0;
+        controlPanel.add(new JLabel("Top N results:"), gbc);
+        gbc.gridx = 1; gbc.weightx = 1;
         topNSpinner = new JSpinner(new SpinnerNumberModel(5, 1, 20, 1));
-        controlPanel.add(topNSpinner);
+        controlPanel.add(topNSpinner, gbc);
 
-        // Recommend button
+        // Recommend button (full width)
         recommendButton = new JButton("Get Recommendations");
-        recommendButton.setBackground(new Color(70, 130, 180));
-        recommendButton.setForeground(Color.WHITE);
-        recommendButton.setFont(new Font("Arial", Font.BOLD, 13));
-        controlPanel.add(new JLabel());
-        controlPanel.add(recommendButton);
+        gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 2; gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(8, 8, 4, 8);
+        controlPanel.add(recommendButton, gbc);
 
         // ── Layout ────────────────────────────────────────────────────────────
         add(scrollPane,   BorderLayout.CENTER);

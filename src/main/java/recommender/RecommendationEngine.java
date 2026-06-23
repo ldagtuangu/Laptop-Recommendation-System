@@ -4,17 +4,6 @@ import processor.LaptopData;
 import java.util.*;
 import java.util.stream.*;
 
-/**
- * Recommendation Engine
- *
- * Pipeline:
- *   1. Hard filter  → loại laptop không đáp ứng điều kiện bắt buộc
- *   2. Scoring      → tính điểm từng laptop còn lại
- *   3. Ranking      → sắp xếp theo score giảm dần
- *   4. Top N        → lấy N laptop đầu
- *   5. Explanation  → giải thích tại sao được recommend
- *   6. Similarity   → gợi ý laptop tương tự (Cosine Similarity)
- */
 public class RecommendationEngine {
 
     private final List<LaptopData> allLaptops;
@@ -23,22 +12,18 @@ public class RecommendationEngine {
         this.allLaptops = laptops;
     }
 
-    // ── Main recommend method ─────────────────────────────────────────────────
-
     public List<RecommendResult> recommend(UserPreference pref) {
         pref.normalize();
 
-        // Bước 1: Hard filter
         List<LaptopData> filtered = hardFilter(allLaptops, pref);
         System.out.printf("After filter: %d / %d laptops%n",
                 filtered.size(), allLaptops.size());
 
         if (filtered.isEmpty()) {
             System.out.println("No laptops match your criteria. Relaxing filters...");
-            filtered = new ArrayList<>(allLaptops); // fallback: dùng tất cả
+            filtered = new ArrayList<>(allLaptops);
         }
 
-        // Bước 2 + 3: Score + Rank
         List<RecommendResult> results = filtered.stream()
                 .map(d -> new RecommendResult(
                         d,
@@ -49,15 +34,17 @@ public class RecommendationEngine {
                 .limit(pref.topN)
                 .collect(Collectors.toList());
 
-        // Bước 4: Thêm similar laptops cho mỗi result
+        Set<String> usedNames = results.stream()
+                .map(r -> r.laptop.name)
+                .collect(Collectors.toSet());
         for (RecommendResult r : results) {
-            r.similarLaptops = findSimilar(r.laptop, allLaptops, 3);
+            List<LaptopData> sim = findSimilar(r.laptop, allLaptops, 5);
+            sim.removeIf(d -> !usedNames.add(d.name));
+            r.similarLaptops = sim.size() > 3 ? sim.subList(0, 3) : sim;
         }
 
         return results;
     }
-
-    // ── Step 1: Hard filter ───────────────────────────────────────────────────
 
     private List<LaptopData> hardFilter(List<LaptopData> laptops, UserPreference pref) {
         return laptops.stream()
@@ -97,7 +84,7 @@ public class RecommendationEngine {
         return all.stream()
                 .filter(d -> !d.name.equals(target.name))
                 .sorted(Comparator.comparingDouble(d ->
-                        cosineSimilarity(v, d.toVector())))
+                        -cosineSimilarity(v, d.toVector())))
                 .limit(n)
                 .collect(Collectors.toList());
     }

@@ -5,10 +5,6 @@ import server.*;
 import javax.swing.*;
 import java.awt.*;
 
-/**
- * Login UI — adapted từ chat app
- * Thêm fields: category, cpuBrand, wantGpu
- */
 public class LoginUI extends JFrame {
 
     private JTextField  nameField;
@@ -20,10 +16,8 @@ public class LoginUI extends JFrame {
 
     public LoginUI() {
         setTitle("Laptop Recommender — Connect");
-        setSize(350, 280);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        setResizable(false);
 
         JPanel panel = new JPanel(new GridLayout(6, 2, 10, 8));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -53,6 +47,9 @@ public class LoginUI extends JFrame {
         panel.add(connectButton);
 
         add(panel);
+
+        pack();
+        setMinimumSize(getSize());
 
         connectButton.addActionListener(e -> connect());
         nameField.addActionListener(e -> connect());

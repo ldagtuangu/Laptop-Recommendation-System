@@ -7,11 +7,8 @@ public class KMeans {
 
     private static final int      K        = 3;
     private static final int      MAX_ITER = 100;
-    private static final String[] LABELS   = {"gaming", "office", "creative"};
 
-    private static final double[] CENTROID_GAMING   = {0.50, 0.30, 0.70, 0.03, 0.80, 0.55, 0.70, 1.0};
-    private static final double[] CENTROID_OFFICE   = {0.80, 0.80, 0.40, 0.03, 0.20, 0.15, 0.30, 0.0};
-    private static final double[] CENTROID_CREATIVE = {0.60, 0.60, 0.70, 0.55, 0.65, 0.75, 0.65, 0.0};
+    private static final Random RAND = new Random();
 
     private double[][] centroids = new double[K][];
 
@@ -19,11 +16,9 @@ public class KMeans {
         scaleAppleBenchmark(laptops);
         renormalizeScores(laptops);
 
-        centroids[0] = CENTROID_GAMING.clone();
-        centroids[1] = CENTROID_OFFICE.clone();
-        centroids[2] = CENTROID_CREATIVE.clone();
+        initCentroidsKMeansPlusPlus(laptops);
 
-        System.out.println("K-Means k=3 starting...");
+        System.out.println("K-Means++ k=3 starting...");
 
         for (int iter = 0; iter < MAX_ITER; iter++) {
             boolean changed = assign(laptops);
@@ -35,13 +30,95 @@ public class KMeans {
             }
         }
 
-        for (LaptopData d : laptops) {
-            d.category = LABELS[d.clusterId];
-        }
+        assignLabelsByCentroid(laptops);
     }
 
     public String predict(LaptopData d) {
-        return LABELS[nearestCentroid(d.toVector())];
+        int best = nearestCentroid(d.toVector());
+        return switch (best) {
+            case 0 -> "gaming";
+            case 1 -> "office";
+            default -> "creative";
+        };
+    }
+
+    private void initCentroidsKMeansPlusPlus(List<LaptopData> laptops) {
+        LaptopData first = laptops.get(RAND.nextInt(laptops.size()));
+        centroids[0] = first.toVector().clone();
+        System.out.println("  Centroid 0: " + first.name);
+
+        for (int c = 1; c < K; c++) {
+            double[] minDists = new double[laptops.size()];
+            double totalDist = 0;
+
+            for (int i = 0; i < laptops.size(); i++) {
+                double[] v = laptops.get(i).toVector();
+                double minD = Double.MAX_VALUE;
+                for (int j = 0; j < c; j++) {
+                    double d = euclidean(v, centroids[j]);
+                    minD = Math.min(minD, d);
+                }
+                double d2 = minD * minD;
+                minDists[i] = d2;
+                totalDist += d2;
+            }
+
+            double r = RAND.nextDouble() * totalDist;
+            double cum = 0;
+            int chosen = 0;
+            for (int i = 0; i < laptops.size(); i++) {
+                cum += minDists[i];
+                if (cum >= r) {
+                    chosen = i;
+                    break;
+                }
+            }
+
+            centroids[c] = laptops.get(chosen).toVector().clone();
+            System.out.printf("  Centroid %d: %s%n", c, laptops.get(chosen).name);
+        }
+    }
+
+    private void assignLabelsByCentroid(List<LaptopData> laptops) {
+        int gamingIdx = 0, officeIdx = 1, creativeIdx = 2;
+
+        double maxGpu = centroids[0][4];
+        gamingIdx = 0;
+        for (int i = 1; i < K; i++) {
+            if (centroids[i][4] > maxGpu) {
+                maxGpu = centroids[i][4];
+                gamingIdx = i;
+            }
+        }
+
+        double maxPort = centroids[0][0] + centroids[0][1];
+        officeIdx = 0;
+        for (int i = 1; i < K; i++) {
+            double p = centroids[i][0] + centroids[i][1];
+            if (p > maxPort && i != gamingIdx) {
+                maxPort = p;
+                officeIdx = i;
+            }
+        }
+
+        for (int i = 0; i < K; i++) {
+            if (i != gamingIdx && i != officeIdx) {
+                creativeIdx = i;
+                break;
+            }
+        }
+
+        String[] labels = new String[K];
+        labels[gamingIdx] = "gaming";
+        labels[officeIdx] = "office";
+        labels[creativeIdx] = "creative";
+
+        System.out.printf("  Labels → cluster %d: gaming, %d: office, %d: creative%n",
+                gamingIdx, officeIdx, creativeIdx);
+
+        for (LaptopData d : laptops) {
+            d.category = labels[d.clusterId];
+        }
     }
 
     private void scaleAppleBenchmark(List<LaptopData> laptops) {
@@ -106,7 +183,7 @@ public class KMeans {
 
         for (int i = 0; i < K; i++) {
             if (counts[i] == 0) {
-                System.out.println("  WARNING: cluster " + LABELS[i] + " is empty!");
+                System.out.println("  WARNING: cluster " + i + " is empty!");
                 continue;
             }
             for (int j = 0; j < vecLen; j++) {
@@ -166,7 +243,7 @@ public class KMeans {
         for (LaptopData d : list) {
             double v = getter.applyAsDouble(d);
             if (v <= 0 || mx == mn) setter.set(d, 0.0);
-            else setter.set(d, Math.max(0, Math.min(1, (v - mn) / (mx - mn))));
+            else setter.set(d, Math.clamp((v - mn) / (mx - mn), 0, 1));
         }
     }
 }
